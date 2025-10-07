@@ -9,19 +9,53 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # ========= Streamlit 美化 & API 初始化 =========
-st.set_page_config(page_title="YouTube頻道AI策略分析儀", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="YouTube頻道AI策略分析工具", page_icon="▶️", layout="wide")
 st.markdown("""
     <style>
     .main {background-color: #f0f2f6;}
-    h1, h2, h3 {color: #1a73e8;}
-    .stTabs [data-baseweb="tab-list"] { gap: 2px; }
-    .stTabs [data-baseweb="tab"] {
-        height: 50px; white-space: pre-wrap; background-color: #f0f2f6;
-        border-radius: 4px 4px 0px 0px; gap: 1px; padding-top: 10px; padding-bottom: 10px;
+    /* 讓App標題與新的紅色主題色呼應 */
+    h1, h2, h3 {color: #ff4b4b;} 
+
+    /* 所有分頁的容器 */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2px; /* 分頁之間的間距 */
+        
+        /* <<< 修改點 1: 啟用 Flexbox 佈局，讓分頁可以伸展 >>> */
+        display: flex !important;
+        width: 100% !important;
     }
-    .stTabs [aria-selected="true"] { background-color: #1a73e8; color: white; font-weight: bold; }
+
+    /* 未選中分頁的樣式 */
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        white-space: pre-wrap;
+        background-color: #f0f2f6;
+        border-radius: 4px 4px 0px 0px;
+        gap: 1px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        color: #444;
+        transition: background-color 0.3s, color 0.3s;
+        flex-grow: 1; /* 允許分頁伸展以填滿空間 */
+        justify-content: center; /* 水平置中文字 */
+        text-align: center; /* 確保文字居中對齊 */
+    }
+
+    /* 滑鼠懸停在「未選中」分頁上的樣式 */
+    .stTabs [data-baseweb="tab"]:not([aria-selected="true"]):hover {
+        background-color: #e8e8e8;
+        color: #ff4b4b;
+    }
+
+    /* 已選中分頁的樣式 */
+    .stTabs [aria-selected="true"] {
+        background-color: #ff4b4b;
+        color: white;
+        font-weight: bold;
+    }
     </style>
 """, unsafe_allow_html=True)
+
 
 try:
     YOUTUBE_API_KEY = st.secrets["YOUTUBE_API_KEY"]
@@ -330,7 +364,7 @@ def create_blank_doc_in_folder(title, folder_id, user_email):
 
 # ========= Streamlit UI (全新互動式流程) =========
 
-st.title("🚀 YouTube 頻道 AI 策略分析工具")
+st.title("▶️ YouTube 頻道 AI 策略分析工具")
 
 SHARED_FOLDER_ID = "1-lJlBB5n3lJzu_LlM15HDeKghjBZ3dbY"
 
