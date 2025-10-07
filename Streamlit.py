@@ -8,40 +8,28 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-# ========= Streamlit 美化 =========
+# ========= Streamlit 美化 & API 初始化 =========
 st.set_page_config(page_title="YouTube頻道AI策略分析儀", page_icon="🚀", layout="wide")
 st.markdown("""
     <style>
     .main {background-color: #f0f2f6;}
     h1, h2, h3 {color: #1a73e8;}
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 2px;
-    }
+    .stTabs [data-baseweb="tab-list"] { gap: 2px; }
     .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: #f0f2f6;
-        border-radius: 4px 4px 0px 0px;
-        gap: 1px;
-        padding-top: 10px;
-        padding-bottom: 10px;
+        height: 50px; white-space: pre-wrap; background-color: #f0f2f6;
+        border-radius: 4px 4px 0px 0px; gap: 1px; padding-top: 10px; padding-bottom: 10px;
     }
-    .stTabs [aria-selected="true"] {
-        background-color: #1a73e8;
-        color: white;
-        font-weight: bold;
-    }
+    .stTabs [aria-selected="true"] { background-color: #1a73e8; color: white; font-weight: bold; }
     </style>
 """, unsafe_allow_html=True)
 
-# ========= API 初始化 (安全地從 st.secrets 讀取) =========
 try:
     YOUTUBE_API_KEY = st.secrets["YOUTUBE_API_KEY"]
     OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
     youtube = googleapiclient.discovery.build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
     client = OpenAI(api_key=OPENAI_API_KEY)
 except (FileNotFoundError, KeyError):
-    st.error("錯誤：請先在 .streamlit/secrets.toml 中設定您的 'YOUTUBE_API_KEY' 和 'OPENAI_API_KEY'。")
+    st.error("錯誤：請先在 .streamlit/secrets.toml 中設定您的 API 金鑰。")
     st.stop()
 
 # ========= 功能模組 =========
@@ -147,46 +135,131 @@ def analyze_comments_with_openai(channel_id, comments_df):
     | :--- | :--- | :--- | :--- |
     | **(例如：知識系統化)** | 粉絲覺得資訊零散，希望能有系統地學習。 | (估算該痛點類型留言數) | (挑選1-2則代表性留言) |
     | **(例如：實作困難)** | 知道理論但不知如何實際操作或應用。 | (估算該痛點類型留言數) | (挑選1-2則代表性留言) |
-    ### 6. 商業變現建議
-    | 欲解決的痛點 | 解決方案 | 理由 | 推薦內容/功能 |
-    | :--- | :--- | :--- | :--- |
-    | (想要解決的粉絲痛點分類，根據上方1. 粉絲痛點分析的痛點分類) | (解決方案建議) | (說明為何這個方案適合解決粉絲痛點) | (具體提出課程單元或 App 核心功能) |
     """
     response = client.chat.completions.create(model="gpt-5-mini", messages=[{"role":"user","content": prompt}])
     return response.choices[0].message.content
 
-def analyze_target_audience_insight(product_choice, channel_analysis, comment_analysis):
+def analyze_commercialization_ideas(product_type, channel_analysis, comment_analysis):
+    if product_type == "線上課程":
+        prompt = f"""
+        你是一位頂尖的線上課程設計專家。請根據下方提供的頻道與粉絲分析資料，為這位 KOL 推薦 1 到 3 個最適合的線上課程主題。
+
+        ---
+        ### 綜合分析資料
+        #### 頻道受眾與內容分析 (Step 2 產出):
+        {channel_analysis}
+        #### 粉絲痛點分析 (Step 3 產出):
+        {comment_analysis}
+        ---
+
+        請為每一個推薦的課程，嚴格依照以下 Markdown 格式進行規劃：
+
+        ### 推薦課程一：(課程名稱)
+        * **課程簡介**：(用 2-3 句話簡潔說明這門課的目標與價值)
+        * **課程大綱**：
+            * **第一章：(章節名稱)**
+                * *設計理由*：(說明此章節為何能對應到特定的受眾輪廓或解決某個粉絲痛點)
+            * **第二章：(章節名稱)**
+                * *設計理由*：(說明此章節的設計理由)
+            * **(請自行發想後續章節)**
+
+        (如果適合，可以繼續規劃 ### 推薦課程二：...)
+        """
+    else: # App
+        prompt = f"""
+        你是一位經驗豐富的 App 產品經理。請根據下方提供的頻道與粉絲分析資料，為這位 KOL 精心設計一款最能解決粉絲痛點的 App。
+
+        ---
+        ### 綜合分析資料
+        #### 頻道受眾與內容分析 (Step 2 產出):
+        {channel_analysis}
+        #### 粉絲痛點分析 (Step 3 產出):
+        {comment_analysis}
+        ---
+
+        請嚴格依照以下 Markdown 格式進行 App 規劃：
+
+        ### **App 名稱推薦**： (App 推薦名稱)
+
+        #### **App 核心價值**：(用一句話說明這個 App 的核心目標與獨特賣點)
+
+        | 核心功能 | 功能描述 | 對應痛點/需求 |
+        | :--- | :--- | :--- |
+        | **(功能名稱)** | (功能描述) | (說明此功能如何對應到特定的粉絲痛點或受眾需求) |
+        | **(功能名稱)** | (功能描述) | (說明此功能如何對應到特定的粉絲痛點或受眾需求) |
+        | (請自行發想) | ... | ... |
+        """
+    
+    response = client.chat.completions.create(model="gpt-5-mini", messages=[{"role":"user","content": prompt}])
+    return response.choices[0].message.content
+
+
+def analyze_target_audience_insight(product_description, channel_analysis, comment_analysis):
     prompt = f"""
-    你是一位頂尖的市場策略家與消費者心理分析專家。請深度學習以下關於一位 KOL 的綜合分析資料，
-    並為其規劃的「{product_choice}」挖掘出最核心的目標客群洞察 (Target Audience Insights)。
+    你是一位頂尖的市場策略家與消費者心理分析專家。請深度學習以下 KOL 的綜合分析資料，並針對我們規劃的產品，挖掘出最核心的目標客群洞察 (TA Insights)。
+
     ---
-    ### 綜合分析資料 (來源: Step 2 & 3)
+    ### 規劃中的產品描述
+    {product_description}
+    ---
+    ### KOL 綜合分析資料
     #### 頻道受眾與內容分析:
     {channel_analysis}
     #### 粉絲痛點與需求分析:
     {comment_analysis}
     ---
+
     請嚴格依照以下 Markdown 架構，以第一人稱（"我"）的角度，深入地剖析目標客群的心理狀態，產出洞察報告。
-    ### 7. {product_choice} 目標客群洞察 (TA Insights)
+    ### 6. 目標客群洞察 (TA Insights)
     | Insights | 說明 |
     | :--- | :--- |
-    | **Belief / Myth (信念/迷思)** | (我對於這類「{product_choice}」的認知是什麼？我相信什麼？我所認定的事實是什麼？) |
+    | **Belief / Myth (信念/迷思)** | (我對於這類產品的認知是什麼？我相信什麼？我所認定的事實是什麼？) |
     | **Need / Pain Point (需求/痛點)** | (我的核心需求或最大痛點是什麼？) |
     | **Current Solutions (現有解決方案)** | (為了解決這個痛點，我目前都是怎麼做的？) |
     | **Limitation / Unsatisfaction (限制/不滿)** | (為什麼我目前的需求或痛點，仍然不能被現有的解決方案完全滿足？) |
-    ### 8. {product_choice} Benefits & Reason To Believe
+
+    ### 7. Benefits & Reason To Believe
     | Benefits & Reason-To-Believe | 說明 |
     | :--- | :--- |
-    | **Functional Benefit (功能效益 - 表層需求)** | (在功能上，我最想要這個「{product_choice}」帶給我什麼具體的好處？) |
-    | **Emotional Benefit (情感效益 - 深層需求)** | (在使用這個「{product_choice}」後，我最渴望獲得什麼樣的情感滿足或心理轉變？) |
-    | **Parity Benefit (市場入場券)** | (我認為這類的「{product_choice}」一定要有哪些基本的功能或效益，才值得我考慮？) |
-    | **Differentiation Benefit (差異化價值 - USP)** | (需要有什麼獨特的功能、體驗或價值，才能讓我眼睛一亮，並強烈地想要擁有你們的「{product_choice}」？) |
-    | **RTB (Reason-to-Believe / 信任狀)** | (為什麼我應該要相信你們的「{product_choice}」真的能提供上述的所有效益？(例如：Certificate：公正機構認證、Credential：科學檢測數據/銷售統計數據/權威機構獎項、Testimonials：用戶問券調查/實測紀錄、Endorsement：知名機構指名使用/名人代言、Others：其他原因)) |
+    | **Functional Benefit (功能效益)** | (在功能上，我最想要這個產品帶給我什麼具體的好處？) |
+    | **Emotional Benefit (情感效益)** | (在使用這個產品後，我最渴望獲得什麼樣的情感滿足或心理轉變？) |
+    | **Parity Benefit (市場入場券)** | (我認為這類的產品一定要有哪些基本的功能或效益，才值得我考慮？) |
+    | **Differentiation Benefit (差異化價值)** | (需要有什麼獨特的功能、體驗或價值，才能讓我眼睛一亮，並強烈地想要擁有這個產品？) |
+    | **RTB (Reason-to-Believe)** | (為什麼我應該要相信這個產品真的能提供上述效益？) |
     """
     response = client.chat.completions.create(model="gpt-5-mini", messages=[{"role":"user", "content": prompt}])
     return response.choices[0].message.content
 
-def analyze_marketing_funnel(kol_name, target_audience, product_choice, start_stage, end_stage, audience_insight):
+
+def analyze_brand_value_proposition(product_description, audience_insights):
+    """
+    根據產品描述和客群洞察，生成一句話的品牌價值主張。
+    """
+    prompt = f"""
+    你是一位頂尖的品牌策略家，擅長將複雜的市場分析濃縮為一句話的價值主張 (Brand Value Proposition)。
+    請深度學習以下關於某位 KOL 的產品規劃與目標客群洞察，並產出該 KOL 在推廣此產品時，應該對目標客群溝通的核心價值主張。
+
+    這個價值主張需要明確定義 KOL 扮演的角色，以及能為用戶帶來的獨特價值。
+    例如：「用故事深入淺出讓你了解世界上的熱門議題。」
+
+    請只給我一句話就好，不要有多餘的文字，並根據以下Markdown語法呈現。
+
+    ### 8. 品牌價值主張 (Brand Value Proposition)
+    (Brand Value Proposition描述)
+
+    ---
+    ### 規劃中的產品描述
+    {product_description}
+
+    ### 目標客群 Insights
+    {audience_insights}
+    ---
+    """
+    response = client.chat.completions.create(model="gpt-5-mini", messages=[{"role":"user", "content": prompt}])
+    return response.choices[0].message.content.strip()
+
+
+def analyze_marketing_funnel(kol_name, product_description, audience_insight, bvp_result, start_stage, end_stage):
     start_stage_desc = start_stage.split('：')[1]
     end_stage_desc = end_stage.split('：')[1]
     prompt = f"""
@@ -201,20 +274,32 @@ def analyze_marketing_funnel(kol_name, target_audience, product_choice, start_st
     - 階段5：再購、續用這項產品或服務。
     - 階段6：分享、推薦這項產品或服務。
     ### 任務目標
-    我們現在的目標客群是 **{kol_name}** 的 **「{target_audience}」**。
-    對於 **「{product_choice}」** 這項產品，他們目前正處於 **「{start_stage_desc} (階段{start_stage[2]})」**。
+    我們現在的目標客群是 **{kol_name}** 的粉絲。
+    他們對於這項產品，他們目前正處於 **「{start_stage_desc} (階段{start_stage[2]})」**。
     我們的目標是引導他們從 **階段{start_stage[2]}** 移動到 **「{end_stage_desc} (階段{end_stage[2]})」**。
     ### 核心指令
-    請根據下方提供的【目標客群深度 Insight】，一步一步地分析：為了讓目標客群完成上述的階段移動，我們在每一個過渡階段會遇到哪些**阻力(Barriers)**或**驅力(Drivers)**？
+    請根據下方提供的【目標客群深度 Insight】、【產品描述】、【品牌價值主張】，一步一步地分析：為了讓目標客群完成上述的階段移動，我們在每一個過渡階段會遇到哪些**阻力(Barriers)**或**驅力(Drivers)**？
     **請特別注意：**
     1.  這裡的阻力與驅力，請專注於**與產品效益(Benefits)無直接相關**的因素，例如：使用者習慣、心理門檻、社群影響、轉換流程的便利性、價格感知等。
     2.  請明確列出在每個階段可以與目標客群互動的**接觸點 (Touchpoints)**。
     3.  針對每一項阻力，提出對應的**關鍵任務 (Key Task)** 或 **突破點**，說明該如何設計行動來幫助用戶跨越障礙，順利往下一階段移動。
     ---
-    ### 【目標客群深度 Insight (來源: Step 4)】
+    ### 【目標客群深度 Insight】
     {audience_insight}
+
+    ### 【產品描述】
+    {product_description}
+    
+    ### 【產品描述】
+    {bvp_result}
     ---
-    請用清晰的、結構化的 Markdown 格式呈現你的分析報告，不用其他多餘的文字。
+    請嚴格依照以下 Markdown 架構格式呈現你的分析報告，不用其他多餘的文字。
+
+    ### 9. 行銷 Funnel 分析
+    | 階段 | 接觸點(Touchpoints) | 阻力(Barrier) | 驅力(Driver) | 突破點(Key Tasks)
+    | :--- | :--- | :--- | :--- | :--- |
+    | (階段x --> 階段y，例如階段0 --> 階段1) | (讓用戶從階段x到階段y中間有甚麼接觸點) | (讓用戶從階段x到階段y中間有甚麼阻力) | (讓用戶從階段x到階段y中間有甚麼阻驅力) | (讓用戶從階段x到階段y中間有甚麼關鍵任務or突破點可以執行) |
+    | (如用戶選擇階段範圍內仍有其他階段就繼續產出) | ... | ... | ... | ... |
     """
     response = client.chat.completions.create(model="gpt-5-mini", messages=[{"role":"user", "content": prompt}])
     return response.choices[0].message.content
@@ -245,7 +330,7 @@ def create_blank_doc_in_folder(title, folder_id, user_email):
 
 # ========= Streamlit UI (全新互動式流程) =========
 
-st.title("🚀 YouTube 頻道 AI 策略分析儀")
+st.title("🚀 YouTube 頻道 AI 策略分析工具")
 
 SHARED_FOLDER_ID = "1-lJlBB5n3lJzu_LlM15HDeKghjBZ3dbY"
 
@@ -254,7 +339,8 @@ if 'current_step' not in st.session_state:
 
 tab_list = [
     "Step 1: 鎖定頻道", "Step 2: 頻道受眾分析", "Step 3: 粉絲痛點洞察",
-    "Step 4: 目標客群 Insight", "Step 5: 行銷 Funnel 分析", "Step 6: 總結與下載"
+    "Step 4: 商業變現建議", "Step 5: 目標客群 Insight", "Step 6: 品牌價值主張", 
+    "Step 7: 行銷 Funnel 分析", "Step 8: 總結與下載"
 ]
 tabs = st.tabs(tab_list)
 
@@ -354,102 +440,205 @@ with tabs[2]: # Step 3
         show_gdoc_link()
         days = st.number_input("設定要分析最近幾天內的影片留言", 7, 3650, 180, 1)
         if st.button("抓取近期留言", key="fetch_comments"):
-            if 'videos_df' not in st.session_state: 
-                st.warning("請先返回 Step 2 抓取影片清單。")
+            if 'videos_df' not in st.session_state: st.warning("請先返回 Step 2 抓取影片清單。")
             else:
-                with st.spinner("抓取留言資料中..."): 
-                    st.session_state.comments_df = get_recent_comments(st.session_state.videos_df, days=days, channel_name=st.session_state.channel_title)
+                with st.spinner("抓取留言資料中..."): st.session_state.comments_df = get_recent_comments(st.session_state.videos_df, days=days, channel_name=st.session_state.channel_title)
                 st.success(f"成功抓取 {len(st.session_state.comments_df)} 則留言！")
 
         if 'comments_df' in st.session_state:
             st.subheader(f"最近 {days} 天留言預覽")
             st.dataframe(st.session_state.comments_df.head(10))
-            col1, col2 = st.columns(2)
-            with col1:
-                st.download_button(
-                    label="⬇️ 下載所有留言 (CSV)",
-                    data=st.session_state.comments_df.to_csv(index=False).encode("utf-8-sig"),
-                    file_name=f"{st.session_state.get('channel_title', 'export')}_all_comments.csv",
-                    mime="text/csv"
-                )
-            
-            question_patterns = r"\?|？|怎麼|如何|為什麼|嗎|能不能|可不可以|怎么|为什么|吗"
-            questions_df = st.session_state.comments_df[st.session_state.comments_df['text'].str.contains(question_patterns, na=False, regex=True)]
-            with col2:
-                st.download_button(
-                    label=f"⬇️ 下載痛點留言({len(questions_df)}則) (CSV)",
-                    data=questions_df.to_csv(index=False).encode("utf-8-sig"),
-                    file_name=f"{st.session_state.get('channel_title', 'export')}_pain_point_comments.csv",
-                    mime="text/csv",
-                    disabled=questions_df.empty
-                )
-
-            if st.button("🤖 使用 AI 分析粉絲痛點與商業機會", key="openai_comment_analysis"):
+            if st.button("🤖 使用 AI 分析粉絲痛點", key="openai_comment_analysis"):
                 with st.spinner("AI 正在分析粉絲留言..."):
-                    if questions_df.empty: 
-                        st.session_state.comment_analysis_result = "找不到包含問題的留言，無法進行痛點分析。"
-                    else: 
-                        st.session_state.comment_analysis_result = analyze_comments_with_openai(st.session_state.channel_id, questions_df)
+                    question_patterns = r"\?|？|怎麼|如何|為什麼|嗎|能不能|可不可以|怎么|为什么|吗"
+                    questions_df = st.session_state.comments_df[st.session_state.comments_df['text'].str.contains(question_patterns, na=False, regex=True)]
+                    if questions_df.empty: st.session_state.comment_analysis_result = "找不到包含問題的留言，無法進行痛點分析。"
+                    else: st.session_state.comment_analysis_result = analyze_comments_with_openai(st.session_state.channel_id, questions_df)
+                st.rerun()
             
-            display_and_copy_block("AI 粉絲痛點分析結果", "comment_analysis_result", "歸納粉絲在留言中提出的問題與困擾，並從中發掘潛在的商業機會（如課程或App）。")
-            if 'comment_analysis_result' in st.session_state and st.button("前往下一步：目標客群 Insight →", key="goto_step4"):
-                st.session_state.current_step = 4
-                st.info("已解鎖 Step 4，請點擊上方分頁標籤繼續。")
+            display_and_copy_block("AI 粉絲痛點分析結果", "comment_analysis_result", "歸納粉絲在留言中提出的問題與困擾。")
+
+
+            if 'comment_analysis_result' in st.session_state:
+                st.markdown("---")
+                st.subheader("下一步？")
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown("##### 需要產品靈感？")
+                    if st.button("執行 Step 4：獲取 AI 商業建議 →", use_container_width=True):
+                        st.session_state.current_step = 4
+                        st.info("已解鎖 Step 4，請點擊上方分頁標籤繼續。")
+                with col2:
+                    st.markdown("##### 已有既定產品？")
+                    if st.button("跳至 Step 5：手動輸入產品分析 →", type="secondary", use_container_width=True):
+                        st.session_state.current_step = 5
+                        st.info("已略過 Step 4 並解鎖 Step 5，請點擊上方分頁標籤繼續。")
 
 with tabs[3]: # Step 4
     if st.session_state.current_step < 4: 
         st.info("請先在 Step 3 完成分析並點擊「前往下一步」。")
     else:
-        st.header(f"🧠 **{st.session_state.channel_title}** - 目標客群 Insight")
+        st.header(f"💡 **{st.session_state.channel_title}** - Step 4: 商業變現建議")
         show_gdoc_link()
         if 'channel_analysis_result' not in st.session_state or 'comment_analysis_result' not in st.session_state: 
             st.warning("⚠️ 警告：缺少 Step 2 或 Step 3 的 AI 分析結果。")
         else:
-            product_choice = st.radio("請選擇您想分析的產品類型：", ("線上課程", "App"), horizontal=True, key="product_choice_s4")
-            if st.button(f"🤖 產生針對「{product_choice}」的目標客群 Insight", key="openai_insight_analysis"):
-                with st.spinner("AI 正在深度挖掘目標客群 Insight..."): 
-                    st.session_state.insight_analysis_result = analyze_target_audience_insight(product_choice, st.session_state.channel_analysis_result, st.session_state.comment_analysis_result)
-                st.rerun()
+            product_type = st.radio("請選擇您想獲得的推薦類型：", ("線上課程", "App"), horizontal=True, key="product_type_s4")
+            if st.button(f"🤖 產生「{product_type}」推薦內容", key="openai_commercialization_analysis"):
+                with st.spinner(f"AI 正在為您規劃 {product_type} ..."):
+                    st.session_state.commercialization_result = analyze_commercialization_ideas(product_type, st.session_state.channel_analysis_result, st.session_state.comment_analysis_result)
             
-            display_and_copy_block("AI 目標客群 Insight 報告", "insight_analysis_result", "深入剖析潛在顧客對於產品的深層心理動機、需求、痛點與價值觀。")
-            if 'insight_analysis_result' in st.session_state and st.button("前往下一步：行銷 Funnel 分析 →", key="goto_step5"):
+            display_and_copy_block("AI 商業變現建議", "commercialization_result", "根據頻道主題與粉絲痛點，生成具體的線上課程或 App 產品規劃。")
+
+            if 'commercialization_result' in st.session_state and st.button("前往下一步：目標客群 Insight →", key="goto_step5"):
                 st.session_state.current_step = 5
                 st.info("已解鎖 Step 5，請點擊上方分頁標籤繼續。")
 
-
 with tabs[4]: # Step 5
     if st.session_state.current_step < 5: 
-        st.info("請先在 Step 4 完成分析並點擊「前往下一步」。")
+        st.info("請先在 Step 3 完成分析並選擇對應的下一步。")
     else:
-        st.header(f"📈 **{st.session_state.channel_title}** - 行銷 Funnel：Barriers & Drivers")
+        st.header(f"🧠 **{st.session_state.channel_title}** - Step 5: 目標客群 Insight")
         show_gdoc_link()
-        if 'insight_analysis_result' not in st.session_state: 
-            st.warning("⚠️ 警告：缺少 Step 4 的 AI Insight 分析結果。")
+        if 'channel_analysis_result' not in st.session_state or 'comment_analysis_result' not in st.session_state: 
+            st.warning("⚠️ 警告：缺少 Step 2 或 Step 3 的 AI 分析結果。")
         else:
-            st.subheader("設定 Funnel 分析參數")
-            col1, col2 = st.columns(2)
-            with col1:
-                target_audience = st.radio("選擇目標客群：", ("社群免費用戶", "App免費用戶", "App付費用戶"), key="target_audience_s5")
-                product_choice_s5 = st.radio("選擇分析的產品：", ("線上課程", "App"), key="product_choice_s5")
-            with col2:
-                funnel_stages = ["階段0：陌生、未知", "階段1：知悉、接觸", "階段2：感興趣、比較", "階段3：體驗、試用", "階段4：首購、使用", "階段5：再購、續用", "階段6：分享、推薦"]
-                start_stage = st.selectbox("目標客群【起始階段】：", options=funnel_stages, index=1)
-                end_stage = st.selectbox("目標客群【結束階段】：", options=funnel_stages, index=4)
-            st.markdown("---")
-            if st.button(f"🤖 分析從 {start_stage.split('：')[0]} 到 {end_stage.split('：')[0]} 的 Barriers & Drivers", key="openai_funnel_analysis"):
-                with st.spinner("AI 正在分析行銷 Funnel 策略..."): 
-                    st.session_state.funnel_analysis_result = analyze_marketing_funnel(st.session_state.channel_title, target_audience, product_choice_s5, start_stage, end_stage, st.session_state.insight_analysis_result)
-                st.rerun()
-            
-            display_and_copy_block("AI 行銷 Funnel 策略報告", "funnel_analysis_result", "分析引導用戶在行銷漏斗中前進的關鍵驅動力與阻礙因素，並提出對應的策略建議。")
-            if 'funnel_analysis_result' in st.session_state and st.button("前往最終步驟：總結與下載 →", key="goto_step6"):
-                st.session_state.current_step = 6
-                st.info("已解鎖 Step 6，請點擊上方分頁標籤繼續。")
+            product_description = ""
+            source_choice = "手動輸入產品內容"
+
+            if 'commercialization_result' in st.session_state and st.session_state.commercialization_result:
+                source_choice = st.radio("請選擇產品資訊來源：", ("使用上一步 AI 推薦的產品內容", "手動輸入產品內容"), key="source_choice_s5")
+            else:
+                st.info("您已選擇略過 AI 產品推薦，請於下方手動輸入您的產品內容。")
+
+            if source_choice == "使用上一步 AI 推薦的產品內容":
+                st.markdown("**將使用以下 AI 生成的內容進行分析：**")
+                with st.expander("AI 推薦內容預覽", expanded=False):
+                    st.info(st.session_state.commercialization_result)
+                product_description = st.session_state.commercialization_result
+            else: # 手動輸入
+                product_description = st.text_area("請在此手動輸入或修改您的產品描述：", st.session_state.get("final_product_description", ""), height=250, placeholder="例如：課程名稱是「美股新手從 0 到 1」，課程大綱包含...")
+
+            # 將最終使用的產品描述存入 session_state，以便 Step 6 使用
+            if product_description:
+                st.session_state.final_product_description = product_description
+
+            if 'final_product_description' in st.session_state and st.session_state.final_product_description:
+                if st.button("🤖 產生目標客群 Insight", key="openai_insight_analysis"):
+                    with st.spinner("AI 正在深度挖掘目標客群 Insight..."):
+                        st.session_state.insight_analysis_result = analyze_target_audience_insight(st.session_state.final_product_description, st.session_state.channel_analysis_result, st.session_state.comment_analysis_result)
+                    st.rerun()
+                
+                display_and_copy_block("AI 目標客群 Insight 報告", "insight_analysis_result", "深入剖析潛在顧客對於產品的深層心理動機、需求、痛點與價值觀。")
+
+                if 'insight_analysis_result' in st.session_state and st.button("前往下一步：品牌價值主張 →", key="goto_step6"):
+                    st.session_state.current_step = 6
+                    st.info("已解鎖 Step 6，請點擊上方分頁標籤繼續。")
 
 
 with tabs[5]: # Step 6
-    if st.session_state.current_step < 6:
+    if st.session_state.current_step < 6: 
         st.info("請先在 Step 5 完成分析並點擊「前往下一步」。")
+    else:
+        st.header(f"⭐️ **{st.session_state.channel_title}** - Step 6: 品牌價值主張")
+        show_gdoc_link()
+        if 'insight_analysis_result' not in st.session_state:
+            st.warning("⚠️ 警告：缺少 Step 5 的 AI Insight 分析結果。")
+        else:
+            st.markdown("此階段將根據您最終確認的產品描述與客群洞察，為 KOL 提煉出一句核心的品牌價值主張 (Brand Value Proposition)。")
+            
+            st.subheader("輸入資料預覽與編輯")
+            
+            with st.expander("規劃中的產品描述 (來自 Step 5)", expanded=False):
+                st.info(st.session_state.get("final_product_description", "尚未定義產品描述。"))
+
+            edited_insights = st.text_area(
+                "目標客群 Insights (您可以根據實際情況編輯)",
+                value=st.session_state.get("insight_analysis_result", ""),
+                height=300,
+                key="edited_insights_s6"
+            )
+
+            if st.button("🤖 提煉品牌價值主張 (一句話)", key="openai_bvp_analysis"):
+                if not edited_insights.strip():
+                    st.warning("目標客群 Insights 內容不可為空。")
+                else:
+                    with st.spinner("AI 正在提煉品牌價值主張..."):
+                        st.session_state.bvp_result = analyze_brand_value_proposition(
+                            st.session_state.final_product_description,
+                            edited_insights
+                        )
+                    st.rerun()
+            
+            display_and_copy_block(
+                section_title="AI 品牌價值主張結果",
+                content_key="bvp_result",
+                help_text="這是根據產品描述與客群洞察，為KOL提煉出的一句話核心價值主張。"
+            )
+
+            if 'bvp_result' in st.session_state and st.button("前往下一步：行銷 Funnel 分析 →", key="goto_step7"):
+                st.session_state.current_step = 7
+                st.info("已解鎖 Step 7，請點擊上方分頁標籤繼續。")
+
+
+with tabs[6]: # Step 7
+    if st.session_state.current_step < 7: 
+        st.info("請先在 Step 6 完成分析並點擊「前往下一步」。")
+    else:
+        st.header(f"📈 **{st.session_state.channel_title}** - Step 7: 行銷 Funnel 分析")
+        show_gdoc_link()
+        if 'insight_analysis_result' not in st.session_state or 'bvp_result' not in st.session_state:
+            st.warning("⚠️ 警告：缺少 Step 5 或 Step 6 的分析結果。")
+        else:
+            st.subheader("行銷 Funnel 簡介")
+            st.markdown("""
+            行銷漏斗是一個描述顧客從初次接觸商品(品牌)到最終完成購買或成為忠實粉絲所經歷的旅程模型。我們的目標是分析在每個階段中，有哪些因素會 **驅使(Drivers)** 他們前進，又有哪些會 **阻礙(Barriers)** 他們，並找出關鍵的突破點。
+            - **階段0：** 陌生、未知這項產品或服務。
+            - **階段1：** 知悉、接觸過這項產品或服務。
+            - **階段2：** 感興趣、比較這項產品或服務與現有解決方案的差異。
+            - **階段3：** 體驗、試用這項產品或服務。
+            - **階段4：** 首購、使用這項產品或服務。
+            - **階段5：** 再購、續用這項產品或服務。
+            - **階段6：** 分享、推薦這項產品或服務。
+            """)
+            st.markdown("---")
+
+            st.subheader("分析前提預覽")
+            with st.expander("點此查看本次 Funnel 分析的基礎資料", expanded=False):
+                st.markdown("##### 規劃中的產品")
+                st.info(st.session_state.get("final_product_description", "N/A"))
+                st.markdown("##### 目標客群 Insights")
+                st.info(st.session_state.get("insight_analysis_result", "N/A"))
+                st.markdown("##### 品牌價值主張")
+                st.info(st.session_state.get('bvp_result', 'N/A'))
+            
+            st.subheader("設定 Funnel 分析範圍")
+            funnel_stages = ["階段0：陌生、未知", "階段1：知悉、接觸", "階段2：感興趣、比較", "階段3：體驗、試用", "階段4：首購、使用", "階段5：再購、續用", "階段6：分享、推薦"]
+            start_stage = st.selectbox("目標客群【起始階段】：", options=funnel_stages, index=1, key="start_stage_s7")
+            end_stage = st.selectbox("目標客群【結束階段】：", options=funnel_stages, index=4, key="end_stage_s7")
+            
+            st.markdown("---")
+            if st.button(f"🤖 分析從 {start_stage.split('：')[0]} 到 {end_stage.split('：')[0]} 的 Barriers & Drivers", key="openai_funnel_analysis"):
+                with st.spinner("AI 正在分析行銷 Funnel 策略..."): 
+                    st.session_state.funnel_analysis_result = analyze_marketing_funnel(
+                        st.session_state.channel_title,
+                        st.session_state.final_product_description,
+                        st.session_state.insight_analysis_result,
+                        st.session_state.bvp_result,
+                        start_stage, 
+                        end_stage
+                    )
+                st.rerun()
+            
+            display_and_copy_block("AI 行銷 Funnel 策略報告", "funnel_analysis_result", "分析引導用戶在行銷漏斗中前進的關鍵驅動力與阻礙因素，並提出對應的策略建議。")
+            if 'funnel_analysis_result' in st.session_state and st.button("前往最終步驟 →", key="goto_step8"):
+                st.session_state.current_step = 8
+                st.info("已解鎖 Step 8，請點擊上方分頁標籤繼續。")
+
+
+with tabs[7]: # Step 8
+    if st.session_state.current_step < 6:
+        st.info("請先在 Step 7 完成分析並點擊「前往下一步」。")
     else:
         st.header("✅ 總結與下載")
         show_gdoc_link()
