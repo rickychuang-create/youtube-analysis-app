@@ -9,7 +9,21 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # ========= Streamlit 美化 & API 初始化 =========
-st.set_page_config(page_title="YouTube頻道AI策略分析工具", page_icon="▶️", layout="wide")
+st.set_page_config(
+    page_title="YouTube頻道AI策略分析工具", 
+    page_icon="▶️", layout="wide",
+    menu_items={
+        'Get Help': 'https://docs.google.com/document/d/1DqiaZmd7DEL5DM7U1qYymmkcnYtjD9EMhvFKO_1PnL8/edit?tab=t.nis2vgychuxj#heading=h.ff9yikkfazez', # 範例：連結到 Streamlit 官方文件
+        'About': """
+
+        ##### 專案簡介：
+        這是一個整合 YouTube Data API 與 OpenAI 技術的 AI 策略分析工具，以YouTube數據(影片觀看&留言)分析作者頻道受眾輪廓 & 粉絲痛點，以協助 AM/MKT/BD 掌握目標客群Insights以及作者品牌價值主張，並透過AI工具產出符合用戶痛點的行銷文案。
+
+        -----
+
+        """
+    })
+
 st.markdown("""
     <style>
     .main {background-color: #f0f2f6;}
@@ -20,7 +34,6 @@ st.markdown("""
     .stTabs [data-baseweb="tab-list"] {
         gap: 2px; /* 分頁之間的間距 */
         
-        /* <<< 修改點 1: 啟用 Flexbox 佈局，讓分頁可以伸展 >>> */
         display: flex !important;
         width: 100% !important;
     }
@@ -53,6 +66,7 @@ st.markdown("""
         color: white;
         font-weight: bold;
     }
+
     </style>
 """, unsafe_allow_html=True)
 
