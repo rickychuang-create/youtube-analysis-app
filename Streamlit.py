@@ -541,7 +541,7 @@ with tabs[3]: # Step 4
         if 'channel_analysis_result' not in st.session_state or 'comment_analysis_result' not in st.session_state: 
             st.warning("⚠️ 警告：缺少 Step 2 或 Step 3 的 AI 分析結果。")
         else:
-            product_category = st.radio("首先，請選擇要針對哪個產品「品類」進行客群洞察分析：", ("線上課程", "App"), horizontal=True, key="product_category_s4")
+            product_category = st.radio("請選擇要針對哪個產品「品類」進行客群洞察分析：", ("線上課程", "App"), horizontal=True, key="product_category_s4")
 
             if st.button(f"🤖 針對「{product_category}」產生目標客群 Insight", key="openai_insight_analysis"):
                 with st.spinner("AI 正在深度挖掘目標客群 Insight..."):
@@ -734,3 +734,4 @@ with tabs[7]: # Step 8
             st.download_button(label="⬇️ 下載留言清單 (CSV)", data=st.session_state.comments_df.to_csv(index=False).encode("utf-8-sig"), file_name=f"{st.session_state.get('channel_title', 'export')}_comments.csv")
         st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。若需要分析同個KOL不同品類的目標客群Insight，請回到 Step 4 選擇品類並繼續進行分析。")
+
