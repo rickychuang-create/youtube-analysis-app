@@ -325,28 +325,10 @@ def analyze_marketing_funnel(kol_name, product_description, audience_insight, bv
     ### 【品牌價值主張】
     {bvp_result}
     ---
-    請嚴格依照以下 Markdown 架構格式呈現你的分析報告，不用其他多餘的文字。
+    請嚴格依照以下 Markdown 架構格式呈現你的分析報告，不用其他多餘的文字，如果選取範圍內還有其他階段就繼續往下產出。
 
     ### 9. 行銷 Funnel 分析
     #### **階段x → 階段y**：
-    * **接觸點(Touchpoints)**：
-        * **接觸點1**
-        * **接觸點2**
-        * **接觸點...**
-    * **阻力(Barrier)**：
-        * **阻力1**
-        * **阻力2**
-        * **阻力...**
-    * **驅力(Driver)**：
-        * **驅力1**
-        * **驅力2**
-        * **驅力...**
-    * **突破點(Key Tasks)**：
-        * **突破點1**
-        * **突破點2**
-        * **突破點...**
-
-    #### **階段y → 階段z**：
     * **接觸點(Touchpoints)**：
         * **接觸點1**
         * **接觸點2**
@@ -734,4 +716,5 @@ with tabs[7]: # Step 8
             st.download_button(label="⬇️ 下載留言清單 (CSV)", data=st.session_state.comments_df.to_csv(index=False).encode("utf-8-sig"), file_name=f"{st.session_state.get('channel_title', 'export')}_comments.csv")
         st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。若需要分析同個KOL不同品類的目標客群Insight，請回到 Step 4 選擇品類並繼續進行分析。")
+
 
