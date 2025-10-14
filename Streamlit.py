@@ -611,12 +611,11 @@ with tabs[5]: # Step 6
         st.info("請先在 Step 4 或 Step 5 完成分析並點擊「前往下一步」。")
     else:
         st.header(f"⭐️ **{st.session_state.channel_title}** - Step 6: 品牌價值主張")
+        st.markdown("此步驟將根據您最終確認的產品描述與客群洞察，為 KOL 提煉出一句核心的品牌價值主張 (Brand Value Proposition)。")
         show_gdoc_link()
         if 'insight_analysis_result' not in st.session_state:
             st.warning("⚠️ 警告：缺少 Step 4 的 AI 目標客群洞察 分析結果。")
         else:
-            st.markdown("此階段將根據您最終確認的產品描述與客群洞察，為 KOL 提煉出一句核心的品牌價值主張 (Brand Value Proposition)。")
-            st.markdown("---")
 
             # --- 1. 產品描述確認區 (與前版相同) ---
             st.subheader("1. 請確認或輸入產品描述")
@@ -676,6 +675,7 @@ with tabs[6]: # Step 7
         st.info("請先在 Step 6 完成分析並點擊「前往下一步」。")
     else:
         st.header(f"📈 **{st.session_state.channel_title}** - Step 7: 行銷 Funnel 分析")
+        st.markdown("此步驟將根據產品內容 & 目標客群洞察 & 品牌價主張，設想行銷Funnel中目標客群在各個階段可能的接觸點、阻力、驅力、突破點，協助行銷文案的發想。")
         show_gdoc_link()
         if 'insight_analysis_result' not in st.session_state or 'bvp_result' not in st.session_state:
             st.warning("⚠️ 警告：缺少 Step 5 或 Step 6 的分析結果。")
@@ -732,7 +732,7 @@ with tabs[7]: # Step 8
     else:
         st.header("✅ 總結與下載")
         show_gdoc_link()
-        st.markdown("您已完成所有分析步驟。如果需要，您可以在此下載分析過程中的原始數據。")
+        st.success("恭喜您已完成所有分析步驟！如果需要，您可以在此下載分析過程中的原始數據。")
         if 'videos_df' in st.session_state:
             st.download_button(label="⬇️ 下載影片清單 (CSV)", data=st.session_state.videos_df.to_csv(index=False).encode("utf-8-sig"), file_name=f"{st.session_state.get('channel_title', 'export')}_videos.csv")
         if 'comments_df' in st.session_state:
@@ -740,6 +740,7 @@ with tabs[7]: # Step 8
         st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。")
         st.info("若需要分析同個KOL不同品類的目標客群洞察，請回到 Step 4 選擇品類並繼續進行分析。")
+
 
 
 
