@@ -17,7 +17,7 @@ st.set_page_config(
         'About': """
 
         ##### 專案簡介：
-        這是一個整合 YouTube Data API 與 OpenAI 技術的 AI 策略分析工具，以YouTube數據(影片觀看&留言)分析作者頻道受眾輪廓 & 粉絲痛點，以協助 AM/MKT/BD 掌握目標客群Insights以及作者品牌價值主張，並透過AI工具產出符合用戶痛點的行銷文案。
+        這是一個整合 YouTube Data API 與 OpenAI 技術的 AI 策略分析工具，以YouTube數據(影片觀看&留言)分析作者頻道受眾輪廓 & 粉絲痛點，以協助 AM/MKT/BD 掌握目標客群洞察以及作者品牌價值主張，並透過AI工具產出符合用戶痛點的行銷文案。
 
         -----
 
@@ -549,7 +549,7 @@ with tabs[3]: # Step 4
             product_category = st.radio("請選擇要針對哪個產品「品類」進行客群洞察分析：", ("線上課程", "App"), horizontal=True, key="product_category_s4")
 
             if st.button(f"🤖 針對「{product_category}」產生目標客群洞察", key="openai_insight_analysis"):
-                with st.spinner("AI 正在深度挖掘目標客群 Insight..."):
+                with st.spinner("AI 正在深度挖掘目標客群洞察..."):
                     st.session_state.insight_analysis_result = analyze_target_audience_insight(product_category, st.session_state.channel_analysis_result, st.session_state.comment_analysis_result)
             
             display_and_copy_block("AI 目標客群洞察報告", "insight_analysis_result", "深入剖析潛在顧客對於特定產品品類的深層心理動機、需求、痛點與價值觀。")
@@ -582,7 +582,7 @@ with tabs[4]: # Step 5
         st.markdown(f"此階段將根據您在下方提供的**目標客群洞察**，產出更具體的 **{product_type}** 建議。")
         show_gdoc_link()
         if 'insight_analysis_result' not in st.session_state: 
-            st.warning("⚠️ 警告：缺少 Step 4 的 AI Insight 分析結果。")
+            st.warning("⚠️ 警告：缺少 Step 4 的 AI 目標客群洞察 分析結果。")
         else:
             st.subheader("請確認或編輯目標客群洞察")
             edited_insights = st.text_area(
@@ -592,9 +592,9 @@ with tabs[4]: # Step 5
                 key="edited_insights_s5"
             )
             
-            if st.button(f"🤖 根據以上 Insight 產生「{product_type}」推薦內容", key="openai_commercialization_analysis"):
+            if st.button(f"🤖 根據以上 目標客群洞察 產生「{product_type}」推薦內容", key="openai_commercialization_analysis"):
                 if not edited_insights.strip():
-                    st.warning("目標客群 Insights 內容不可為空。")
+                    st.warning("目標客群洞察 內容不可為空。")
                 else:
                     with st.spinner(f"AI 正在為您規劃 {product_type} ..."):
                         st.session_state.commercialization_result = analyze_commercialization_ideas(product_type, edited_insights)
@@ -613,7 +613,7 @@ with tabs[5]: # Step 6
         st.header(f"⭐️ **{st.session_state.channel_title}** - Step 6: 品牌價值主張")
         show_gdoc_link()
         if 'insight_analysis_result' not in st.session_state:
-            st.warning("⚠️ 警告：缺少 Step 4 的 AI Insight 分析結果。")
+            st.warning("⚠️ 警告：缺少 Step 4 的 AI 目標客群洞察 分析結果。")
         else:
             st.markdown("此階段將根據您最終確認的產品描述與客群洞察，為 KOL 提煉出一句核心的品牌價值主張 (Brand Value Proposition)。")
             st.markdown("---")
@@ -650,7 +650,7 @@ with tabs[5]: # Step 6
             # --- 3. AI 分析觸發 ---
             if st.button("🤖 提煉品牌價值主張 (一句話)", key="openai_bvp_analysis"):
                 if not edited_insights.strip() or not st.session_state.get("final_product_description", "").strip():
-                    st.warning("請確保「產品描述」和「目標客群 Insights」皆有內容。")
+                    st.warning("請確保「產品描述」和「目標客群洞察」皆有內容。")
                 else:
                     # 更新最終版的 Insights 到 session_state，供後續步驟使用
                     st.session_state.final_edited_insights = edited_insights
@@ -697,7 +697,7 @@ with tabs[6]: # Step 7
             with st.expander("點此查看本次 Funnel 分析的基礎資料", expanded=False):
                 st.markdown("##### 規劃中的產品")
                 st.info(st.session_state.get("final_product_description", "N/A"))
-                st.markdown("##### 目標客群 Insights")
+                st.markdown("##### 目標客群洞察")
                 st.info(st.session_state.get("insight_analysis_result", "N/A"))
                 st.markdown("##### 品牌價值主張")
                 st.info(st.session_state.get('bvp_result', 'N/A'))
@@ -739,7 +739,8 @@ with tabs[7]: # Step 8
             st.download_button(label="⬇️ 下載留言清單 (CSV)", data=st.session_state.comments_df.to_csv(index=False).encode("utf-8-sig"), file_name=f"{st.session_state.get('channel_title', 'export')}_comments.csv")
         st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。")
-        st.info("若需要分析同個KOL不同品類的目標客群Insight，請回到 Step 4 選擇品類並繼續進行分析。")
+        st.info("若需要分析同個KOL不同品類的目標客群洞察，請回到 Step 4 選擇品類並繼續進行分析。")
+
 
 
 
