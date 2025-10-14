@@ -715,6 +715,8 @@ with tabs[7]: # Step 8
         if 'comments_df' in st.session_state:
             st.download_button(label="⬇️ 下載留言清單 (CSV)", data=st.session_state.comments_df.to_csv(index=False).encode("utf-8-sig"), file_name=f"{st.session_state.get('channel_title', 'export')}_comments.csv")
         st.markdown("---")
-        st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。若需要分析同個KOL不同品類的目標客群Insight，請回到 Step 4 選擇品類並繼續進行分析。")
+        st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。")
+        st.info("若需要分析同個KOL不同品類的目標客群Insight，請回到 Step 4 選擇品類並繼續進行分析。")
+
 
 
