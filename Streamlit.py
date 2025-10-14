@@ -522,19 +522,19 @@ with tabs[3]: # Step 4
     else:
         st.header(f"🧠 **{st.session_state.channel_title}** - Step 4: 目標客群洞察")
         st.markdown("""
-        此步驟我們將【目標客群】的群體行為視為一個人 (Who) 的行為，並根據 Step2 & Step3 的結果找出針對** App / 線上課程 **具有行動指導意義的洞察。
+        此步驟我們將【目標客群】的群體行為視為一個人 (Who) 的行為，並根據 Step2 & Step3 的結果找出針對 **App / 線上課程** 具有行動指導意義的洞察。
         """)
         show_gdoc_link()
         st.subheader("目標客群洞察簡介")
         st.markdown("""
-        目標客群洞察主要分為兩個部分：** Insights / Benefits & RTB **
-        ** Insights ** 
+        目標客群洞察主要分為兩個部分：**Insights / Benefits & RTB**
+        **Insights**
         - Belief / Myth：他對於這類產品或服務的認知是什麼？他相信什麼？他所認定的事實是什麼？
         - Need / Pain Point：他的需求或痛點是什麼？
         - Current Solutions：他目前的解決方案是什麼？
         - Limitation / Unsatisfaction：為什麼他的需求或痛點不能被完全解決？
 
-        ** Benefits & RTB**
+        **Benefits & RTB**
         - Functional Benefit (通常是表層需求)：他想要什麼功能效益？
         - Emotional Benefit (通常是深層需求)：他想要什麼情感效益？
         - Parity Benefit (入場券)：這類產品或服務一定要有的基本效益是什麼？(市場環境評估)
@@ -739,6 +739,7 @@ with tabs[7]: # Step 8
         st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。")
         st.info("若需要分析同個KOL不同品類的目標客群Insight，請回到 Step 4 選擇品類並繼續進行分析。")
+
 
 
 
