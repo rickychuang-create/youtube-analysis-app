@@ -578,15 +578,15 @@ with tabs[4]: # Step 5
         st.info("請先在 Step 4 完成分析並選擇對應的下一步。")
     else:
         st.header(f"💡 **{st.session_state.channel_title}** - Step 5: 產品內容變現建議")
+        product_type = st.session_state.get("product_category_s4", "線上課程")
+        st.markdown(f"此階段將根據您在下方提供的**目標客群洞察**，產出更具體的 **{product_type}** 建議。")
         show_gdoc_link()
         if 'insight_analysis_result' not in st.session_state: 
             st.warning("⚠️ 警告：缺少 Step 4 的 AI Insight 分析結果。")
         else:
-            product_type = st.session_state.get("product_category_s4", "線上課程")
-            st.markdown(f"此階段將根據您在下方提供的**客群洞察**，產出更具體的 **{product_type}** 建議。")
-
+            st.subheader("請確認或編輯目標客群洞察")
             edited_insights = st.text_area(
-                "目標客群 Insights (您可以根據 Step 4 的結果進行編輯)",
+                "目標客群洞察 (您可以根據 Step 4 的結果進行編輯)",
                 value=st.session_state.get("insight_analysis_result", ""),
                 height=300,
                 key="edited_insights_s5"
@@ -633,13 +633,13 @@ with tabs[5]: # Step 6
             st.markdown("---")
 
             # --- 2. 客群 Insights 編輯區 ---
-            st.subheader("2. 請確認或編輯目標客群 Insights")
+            st.subheader("2. 請確認或編輯目標客群洞察")
 
             # <<< 關鍵修正：預設值會優先讀取 Step 5 編輯過的版本 >>>
             default_insights = st.session_state.get("edited_insights_s5", st.session_state.get("insight_analysis_result", ""))
             
             edited_insights = st.text_area(
-                "目標客群 Insights (您可以根據先前步驟的結果進行最終編輯)",
+                "目標客群洞察 (您可以根據先前步驟的結果進行最終編輯)",
                 value=default_insights,
                 height=400,
                 key="edited_insights_s6"
@@ -740,6 +740,7 @@ with tabs[7]: # Step 8
         st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。")
         st.info("若需要分析同個KOL不同品類的目標客群Insight，請回到 Step 4 選擇品類並繼續進行分析。")
+
 
 
 
