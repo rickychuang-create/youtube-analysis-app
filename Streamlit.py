@@ -435,9 +435,8 @@ with tabs[1]: # Step 2
         st.info("請先在 Step 1 完成頻道的鎖定。")
     else:
         st.header(f"📊 **{st.session_state.channel_title}** - 頻道整體內容與受眾分析")
-        show_gdoc_link()
         st.markdown("此步驟將抓取該頻道上傳的所有影片，並利用影片標題進行影片主題分類，最後透過每個主題的影片數量&平均瀏覽數進行受眾輪廓分析。")
-        st.markdown("----")
+        show_gdoc_link()
         if 'gdoc_url' not in st.session_state:
             with st.expander("📂 想要開始建立 Google Docs 報告嗎？"):
                 st.markdown("您可以現在就建立一份空白報告，後續步驟的產出就能隨時複製貼上。")
@@ -487,8 +486,8 @@ with tabs[2]: # Step 3
     else:
         st.header(f"💬 **{st.session_state.channel_title}** - 粉絲留言與痛點分析")
         show_gdoc_link()
-        st.markdown("此步驟將鎖定該頻道特定天數內上傳的影片，並且抓取影片底下的留言，再將留言中包含 (?|？|怎麼|如何|為什麼|嗎|能不能|可不可以|怎么|为什么|吗) 的文字視為粉絲的問題與困擾，最後將篩選後的留言進行分類以洞察粉絲痛點。")
-        st.markdown("----")
+        st.markdown("此步驟將鎖定該頻道特定天數內上傳的影片，並且抓取影片底下的留言，再將留言中包含 **(?|？|怎麼|如何|為什麼|嗎|能不能|可不可以|怎么|为什么|吗)** 的文字視為粉絲的問題與困擾，最後將篩選後的留言進行分類以洞察粉絲痛點。")
+        st.markdown("---")
         days = st.number_input("設定要分析最近幾天內的影片留言", 7, 3650, 180, 1)
         if st.button("抓取近期留言", key="fetch_comments"):
             if 'videos_df' not in st.session_state: st.warning("請先返回 Step 2 抓取影片清單。")
@@ -721,6 +720,7 @@ with tabs[7]: # Step 8
         st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。")
         st.info("若需要分析同個KOL不同品類的目標客群Insight，請回到 Step 4 選擇品類並繼續進行分析。")
+
 
 
 
