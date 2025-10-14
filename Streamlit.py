@@ -707,7 +707,6 @@ with tabs[6]: # Step 7
             start_stage = st.selectbox("目標客群【起始階段】：", options=funnel_stages, index=1, key="start_stage_s7")
             end_stage = st.selectbox("目標客群【結束階段】：", options=funnel_stages, index=4, key="end_stage_s7")
             
-            st.markdown("---")
             if st.button(f"🤖 分析從 {start_stage.split('：')[0]} 到 {end_stage.split('：')[0]} 的 Barriers & Drivers", key="openai_funnel_analysis"):
                 with st.spinner("AI 正在分析行銷 Funnel 策略..."): 
                     st.session_state.funnel_analysis_result = analyze_marketing_funnel(
@@ -740,6 +739,7 @@ with tabs[7]: # Step 8
         st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。")
         st.info("若需要分析同個KOL不同品類的目標客群洞察，請回到 Step 4 選擇品類並繼續進行分析。")
+
 
 
 
