@@ -189,7 +189,7 @@ def analyze_comments_with_openai(channel_id, comments_df):
 
 def analyze_target_audience_insight(product_category, channel_analysis, comment_analysis):
     prompt = f"""
-    你是一位頂尖的市場策略家與消費者心理分析專家。請深度學習以下 KOL 的綜合分析資料，並針對「{product_category}」這個產品品類，挖掘出最核心的目標客群洞察 (TA Insights)。
+    你是一位頂尖的市場策略家與消費者心理分析專家。請深度學習以下 KOL 的綜合分析資料，並針對「{product_category}」這個產品品類，挖掘出最核心的目標客群洞察。
 
     ---
     ### KOL 綜合分析資料
@@ -200,7 +200,7 @@ def analyze_target_audience_insight(product_category, channel_analysis, comment_
     ---
 
     請嚴格依照以下 Markdown 架構，以第一人稱（"我"）的角度，深入地剖析目標客群對於「{product_category}」的心理狀態，產出洞察報告。
-    ### 6. 目標客群洞察 (TA Insights)
+    ### 6. 目標客群 Insights
     | Insights | 說明 |
     | :--- | :--- |
     | **Belief / Myth (信念/迷思)** | (我對於這類「{product_category}」的認知是什麼？我相信什麼？我所認定的事實是什麼？) |
@@ -208,7 +208,7 @@ def analyze_target_audience_insight(product_category, channel_analysis, comment_
     | **Current Solutions (現有解決方案)** | (為了解決這個痛點，我目前都是怎麼做的？) |
     | **Limitation / Unsatisfaction (限制/不滿)** | (為什麼我目前的需求或痛點，仍然不能被現有的解決方案完全滿足？) |
 
-    ### 7. Benefits & Reason To Believe
+    ### 7. 目標客群 Benefits & Reason To Believe
     | Benefits & Reason-To-Believe | 說明 |
     | :--- | :--- |
     | **Functional Benefit (功能效益)** | (在功能上，我最想要這個產品帶給我什麼具體的好處？) |
@@ -223,10 +223,10 @@ def analyze_target_audience_insight(product_category, channel_analysis, comment_
 def analyze_commercialization_ideas(product_type, edited_insights):
     if product_type == "線上課程":
         prompt = f"""
-        你是一位頂尖的線上課程設計專家。請根據下方提供的目標客群洞察 (TA Insights)，為這位 KOL 推薦 1 到 3 個最適合的線上課程，主題要跟投資相關。
+        你是一位頂尖的線上課程設計專家。請根據下方提供的目標客群洞察，為這位 KOL 推薦 1 到 3 個最適合的線上課程，主題要跟投資相關。
 
         ---
-        ### 目標客群洞察 (TA Insights)
+        ### 目標客群洞察
         {edited_insights}
         ---
 
@@ -242,9 +242,9 @@ def analyze_commercialization_ideas(product_type, edited_insights):
         """
     else: # App
         prompt = f"""
-        你是一位經驗豐富的 App 產品經理。請根據下方提供的目標客群洞察 (TA Insights)，為這位 KOL 精心設計一款最能解決粉絲痛點的 App，App的設計要跟投資理財相關。
+        你是一位經驗豐富的 App 產品經理。請根據下方提供的目標客群洞察，為這位 KOL 精心設計一款最能解決粉絲痛點的 App，App的設計要跟投資理財相關。
         ---
-        ### 目標客群洞察 (TA Insights)
+        ### 目標客群洞察
         {edited_insights}
         ---
         請嚴格依照以下 Markdown 格式進行 App 規劃：
@@ -272,7 +272,7 @@ def analyze_brand_value_proposition(product_description, audience_insights):
     ### 規劃中的產品描述
     {product_description}
 
-    ### 目標客群 Insights
+    ### 目標客群洞察
     {audience_insights}
     ---
 
@@ -310,13 +310,13 @@ def analyze_marketing_funnel(kol_name, product_description, audience_insight, bv
     他們對於這項產品，他們目前正處於 **「{start_stage_desc} (階段{start_stage[2]})」**。
     我們的目標是引導他們從 **階段{start_stage[2]}** 移動到 **「{end_stage_desc} (階段{end_stage[2]})」**。
     ### 核心指令
-    請根據下方提供的【目標客群深度 Insight】、【產品描述】、【品牌價值主張】，一步一步地分析：為了讓目標客群完成上述的階段移動，我們在每一個過渡階段會遇到哪些**阻力(Barriers)**或**驅力(Drivers)**？
+    請根據下方提供的【目標客群深度洞察】、【產品描述】、【品牌價值主張】，一步一步地分析：為了讓目標客群完成上述的階段移動，我們在每一個過渡階段會遇到哪些**阻力(Barriers)**或**驅力(Drivers)**？
     **請特別注意：**
     1.  這裡的阻力與驅力，請專注於**與產品效益(Benefits)無直接相關**的因素，例如：使用者習慣、心理門檻、社群影響、轉換流程的便利性、價格感知等。
     2.  請明確列出在每個階段可以與目標客群互動的**接觸點 (Touchpoints)**。
     3.  針對每一項阻力，提出對應的**關鍵任務 (Key Task)** 或 **突破點**，說明該如何設計行動來幫助用戶跨越障礙，順利往下一階段移動。
     ---
-    ### 【目標客群深度 Insight】
+    ### 【目標客群深度洞察】
     {audience_insight}
 
     ### 【產品描述】
@@ -512,7 +512,7 @@ with tabs[2]: # Step 3
                 st.rerun()
             
             display_and_copy_block("AI 粉絲痛點分析結果", "comment_analysis_result", "歸納粉絲在留言中提出的問題與困擾。")
-            if 'comment_analysis_result' in st.session_state and st.button("前往下一步：目標客群 Insight →", key="goto_step4"):
+            if 'comment_analysis_result' in st.session_state and st.button("前往下一步：目標客群洞察 →", key="goto_step4"):
                 st.session_state.current_step = 4
                 st.info("已解鎖 Step 4，請點擊上方分頁標籤繼續。")
 
@@ -528,6 +528,7 @@ with tabs[3]: # Step 4
         st.subheader("目標客群洞察簡介")
         st.markdown("""
         目標客群洞察主要分為兩個部分：**Insights / Benefits & RTB**
+        
         **Insights**
         - Belief / Myth：他對於這類產品或服務的認知是什麼？他相信什麼？他所認定的事實是什麼？
         - Need / Pain Point：他的需求或痛點是什麼？
@@ -547,11 +548,11 @@ with tabs[3]: # Step 4
         else:
             product_category = st.radio("請選擇要針對哪個產品「品類」進行客群洞察分析：", ("線上課程", "App"), horizontal=True, key="product_category_s4")
 
-            if st.button(f"🤖 針對「{product_category}」產生目標客群 Insight", key="openai_insight_analysis"):
+            if st.button(f"🤖 針對「{product_category}」產生目標客群洞察", key="openai_insight_analysis"):
                 with st.spinner("AI 正在深度挖掘目標客群 Insight..."):
                     st.session_state.insight_analysis_result = analyze_target_audience_insight(product_category, st.session_state.channel_analysis_result, st.session_state.comment_analysis_result)
             
-            display_and_copy_block("AI 目標客群 Insight 報告", "insight_analysis_result", "深入剖析潛在顧客對於特定產品品類的深層心理動機、需求、痛點與價值觀。")
+            display_and_copy_block("AI 目標客群洞察報告", "insight_analysis_result", "深入剖析潛在顧客對於特定產品品類的深層心理動機、需求、痛點與價值觀。")
 
             if 'insight_analysis_result' in st.session_state:
                 st.markdown("---")
@@ -739,6 +740,7 @@ with tabs[7]: # Step 8
         st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。")
         st.info("若需要分析同個KOL不同品類的目標客群Insight，請回到 Step 4 選擇品類並繼續進行分析。")
+
 
 
 
