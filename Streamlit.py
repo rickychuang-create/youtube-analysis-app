@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime, timedelta, timezone
 from openai import OpenAI
 import json
+import requests
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -74,6 +75,7 @@ st.markdown("""
 try:
     YOUTUBE_API_KEY = st.secrets["YOUTUBE_API_KEY"]
     OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+    OPENROUTER_API_KEY = st.secrets["OPENROUTER_API_KEY"]
     youtube = googleapiclient.discovery.build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
     client = OpenAI(api_key=OPENAI_API_KEY)
 except (FileNotFoundError, KeyError):
@@ -373,6 +375,37 @@ def create_blank_doc_in_folder(title, folder_id, user_email):
     except Exception as e:
         return None, f"建立 Google Docs 失敗: {e}"
 
+
+def generate_claude_copy(chat_history):
+    """使用 OpenRouter API 呼叫 Claude 模型來生成文案。"""
+    try:
+        # 為了讓 OpenRouter 識別您的應用，需要加入 Referer 和 Title 標頭
+        # 我們可以讓 Referer 變得可設定，方便您未來部署
+        # APP_URL 可以在 secrets.toml 中設定，例如 APP_URL = "https://your-app-name.streamlit.app"
+        app_url = "https://youtube-analysis-app-gebkr9uvlwwkjvxj6yxu92.streamlit.app"
+
+        response = requests.post(
+            url="https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": app_url, 
+                "X-Title": "YouTube AI Tools",
+            },
+            json={
+                "model": "anthropic/claude-3-5-sonnet-20241022",
+                "messages": chat_history,
+            }
+        )
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"]
+    except requests.exceptions.HTTPError as e:
+        # 提供更詳細的錯誤回報
+        return f"API 呼叫失敗: {e.response.status_code} - {e.response.text}"
+    except Exception as e:
+        return f"發生未預期的錯誤: {e}"
+
+
 # ========= Streamlit UI (全新互動式流程) =========
 
 st.title("▶️ YouTube 頻道 AI 策略分析工具")
@@ -386,8 +419,9 @@ if 'current_step' not in st.session_state:
 tab_list = [
     "Step 1: 鎖定頻道", "Step 2: 頻道受眾分析", "Step 3: 粉絲痛點洞察",
     "Step 4: 目標客群洞察", "Step 5: 產品內容變現建議", "Step 6: 品牌價值主張", 
-    "Step 7: 行銷 Funnel 分析", "Step 8: 總結與下載"
+    "Step 7: 行銷 Funnel 分析", "Step 8: 行銷文案撰寫", "Step 9: 總結與下載"
 ]
+
 
 tabs = st.tabs(tab_list)
 
@@ -520,7 +554,7 @@ with tabs[3]: # Step 4
     if st.session_state.current_step < 4: 
         st.info("請先在 Step 3 完成分析並點擊「前往下一步」。")
     else:
-        st.header(f"🧠 **{st.session_state.channel_title}** - Step 4: 目標客群洞察")
+        st.header(f"🧠 **{st.session_state.channel_title}** - 目標客群洞察")
         st.markdown("""
         此步驟我們將【目標客群】的群體行為視為一個人 (Who) 的行為，並根據 Step2 & Step3 的結果找出針對 **App / 線上課程** 具有行動指導意義的洞察。
         """)
@@ -577,7 +611,7 @@ with tabs[4]: # Step 5
     if st.session_state.current_step < 5: 
         st.info("請先在 Step 4 完成分析並選擇對應的下一步。")
     else:
-        st.header(f"💡 **{st.session_state.channel_title}** - Step 5: 產品內容變現建議")
+        st.header(f"💡 **{st.session_state.channel_title}** - 產品內容變現建議")
         product_type = st.session_state.get("product_category_s4", "線上課程")
         st.markdown(f"此階段將根據您在下方提供的**目標客群洞察**，產出更具體的 **{product_type}** 建議。")
         show_gdoc_link()
@@ -610,7 +644,7 @@ with tabs[5]: # Step 6
     if st.session_state.current_step < 6: 
         st.info("請先在 Step 4 或 Step 5 完成分析並點擊「前往下一步」。")
     else:
-        st.header(f"⭐️ **{st.session_state.channel_title}** - Step 6: 品牌價值主張")
+        st.header(f"⭐️ **{st.session_state.channel_title}** - 品牌價值主張")
         st.markdown("此步驟將根據您最終確認的產品描述與客群洞察，為 KOL 提煉出一句核心的品牌價值主張 (Brand Value Proposition)。")
         show_gdoc_link()
         if 'insight_analysis_result' not in st.session_state:
@@ -674,7 +708,7 @@ with tabs[6]: # Step 7
     if st.session_state.current_step < 7: 
         st.info("請先在 Step 6 完成分析並點擊「前往下一步」。")
     else:
-        st.header(f"📈 **{st.session_state.channel_title}** - Step 7: 行銷 Funnel 分析")
+        st.header(f"📈 **{st.session_state.channel_title}** - 行銷 Funnel 分析")
         st.markdown("此步驟將根據產品內容 & 目標客群洞察 & 品牌價主張，設想行銷Funnel中目標客群在各個階段可能的接觸點、阻力、驅力、突破點，協助行銷文案的發想。")
         show_gdoc_link()
         if 'insight_analysis_result' not in st.session_state or 'bvp_result' not in st.session_state:
@@ -720,14 +754,142 @@ with tabs[6]: # Step 7
                 st.rerun()
             
             display_and_copy_block("AI 行銷 Funnel 策略報告", "funnel_analysis_result", "分析引導用戶在行銷漏斗中前進的關鍵驅動力與阻礙因素，並提出對應的策略建議。")
-            if 'funnel_analysis_result' in st.session_state and st.button("前往最終步驟 →", key="goto_step8"):
+            if 'funnel_analysis_result' in st.session_state and st.button("前往下一步：行銷文案撰寫 →", key="goto_step8"):
                 st.session_state.current_step = 8
                 st.info("已解鎖 Step 8，請點擊上方分頁標籤繼續。")
 
-
 with tabs[7]: # Step 8
-    if st.session_state.current_step < 6:
-        st.info("請先在 Step 7 完成分析並點擊「前往下一步」。")
+    st.header("✍️ 行銷文案撰寫 (Claude)")
+    st.markdown("此步驟使用 **Claude 模型**進行對話式文案生成。您可以獨立使用，或讓系統自動帶入前面步驟的分析結果作為初始情境。")
+    st.markdown("---")
+    
+    # 初始化對話歷史
+    if "claude_chat_history" not in st.session_state:
+        st.session_state.claude_chat_history = []
+
+    st.subheader("填寫文案情境資訊")
+
+    # 根據是否完成前面步驟，決定預設值
+    default_product = st.session_state.get("final_product_description", "")
+    default_insights = st.session_state.get("final_edited_insights", st.session_state.get("insight_analysis_result", ""))
+    default_bvp = st.session_state.get("bvp_result", "")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        product_desc_input = st.text_area("產品描述", value=default_product, height=150, help="您的產品、服務或課程是什麼？")
+        audience_input = st.text_area("目標客群洞察", value=default_insights, height=150, help="這群人是誰？他們在想什麼？有什麼痛點？")
+        
+        # <<< 新增：品牌價值主張輸入框 >>>
+        bvp_input = st.text_area("品牌價值主張 (KOL人設)", value=default_bvp, height=100, help="KOL 要帶給目標客群什麼樣的核心價值？一句話講完。")
+
+    with col2:
+        funnel_stages = ["階段0：陌生、未知", "階段1：知悉、接觸", "階段2：感興趣、比較", "階段3：體驗、試用", "階段4：首購、使用", "階段5：再購、續用", "階段6：分享、推薦"]
+        start_stage_input = st.selectbox("目標客群【起始階段】", options=funnel_stages, index=1)
+        end_stage_input = st.selectbox("目標客群【結束階段】", options=funnel_stages, index=4)
+        touchpoint_input = st.text_input("接觸點 (Touchpoint)", placeholder="例如：FB 廣告、KOL 開箱影片...")
+        barrier_input = st.text_input("要突破的阻力 (Barrier)", placeholder="例如：覺得價格太高、對效果抱持懷疑...")
+        key_task_input = st.text_input("想嘗試的突破點 (Key Task)", placeholder="例如：用見證強調價值、提供限時優惠...")
+        style_options = ["專業權威", "活潑有趣", "溫暖同理", "幽默搞怪", "簡潔有力", "其他..."]
+        style_input = st.selectbox("行銷文案風格", style_options, help="您希望文案呈現什麼樣的語氣？")
+        
+        final_style_input = ""
+        if style_input == "其他...":
+            final_style_input = st.text_input("請輸入您想要的自訂風格：", placeholder="例如：帶有懸疑感的說故事風格")
+        else:
+            final_style_input = style_input
+    st.markdown("---")
+    
+    if st.button("✅ 產生並預覽 Prompt"):
+        initial_prompt = f"""
+你是一位頂尖的行銷文案專家。請根據我提供的行銷目標與情境，為我撰寫一份行銷文案。
+
+核心任務資訊:
+- 行銷目標: 引導客群從 {start_stage_input} 移動到 {end_stage_input}。
+- 溝通情境: 在「{touchpoint_input}」這個接觸點，需要突破「{barrier_input}」這個阻力。
+- 策略: 我們希望透過「{key_task_input}」來達成目標。
+- 期望文案風格: {style_input}
+
+---
+
+商品與目標客群資訊:
+
+一、產品描述: 
+
+{product_desc_input}
+
+二、目標客群洞察: 
+
+{audience_input}
+
+三、行銷 Funnel 簡介：
+- 階段0：陌生、未知這項產品或服務。
+- 階段1：知悉、接觸過這項產品或服務。
+- 階段2：感興趣、比較這項產品或服務與現有解決方案的差異。
+- 階段3：體驗、試用這項產品或服務。
+- 階段4：首購、使用這項產品或服務。
+- 階段5：再購、續用這項產品或服務。
+- 階段6：分享、推薦這項產品或服務。
+
+---
+
+請根據以上所有資訊，為我草擬第一版行銷文案。
+        """
+        st.session_state.final_prompt_s8 = initial_prompt
+
+    if 'final_prompt_s8' in st.session_state:
+        st.subheader("最終確認 Prompt (可選填寫)")
+        edited_prompt = st.text_area("這是即將發送給 Claude 的完整指令，您可以在送出前做最後修改：", value=st.session_state.final_prompt_s8, height=350)
+
+        if st.button("🚀 根據此 Prompt 開始撰寫文案"):
+            st.session_state.claude_chat_history = [{"role": "user", "content": edited_prompt}]
+            with st.spinner("Claude 正在撰寫文案..."):
+                assistant_response = generate_claude_copy(st.session_state.claude_chat_history)
+                st.session_state.claude_chat_history.append({"role": "assistant", "content": assistant_response})
+            # 清除 prompt 預覽，進入對話模式
+            del st.session_state.final_prompt_s8
+            st.rerun()
+
+    st.markdown("---")
+
+    st.subheader("🤖 與 Claude 進行對話")
+    # 如果對話歷史不為空，才顯示對話介面和結束按鈕
+    if st.session_state.claude_chat_history:
+    # 1. 永遠先顯示所有歷史訊息
+        for message in st.session_state.claude_chat_history:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+        # 2. 然後在最底部渲染對話輸入框
+        if prompt := st.chat_input("您可以繼續提出修改要求... (例如：幫我寫3個標題)"):
+            # 3. 當使用者輸入後，先將用戶訊息加入歷史紀錄
+            st.session_state.claude_chat_history.append({"role": "user", "content": prompt})
+            
+            # 4. 呼叫 AI 並將 AI 回覆也加入歷史紀錄
+            with st.spinner("Claude 正在回覆..."):
+                assistant_response = generate_claude_copy(st.session_state.claude_chat_history)
+                st.session_state.claude_chat_history.append({"role": "assistant", "content": assistant_response})
+            
+            # 5. 重新整理頁面，讓新的對話內容被正確渲染出來
+            st.rerun()
+            
+        st.markdown("---")
+        st.subheader("下一步？")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🔄 結束對話，重新撰寫其他行銷文案", use_container_width=True, key="clear_chat"):
+                st.session_state.claude_chat_history = []
+                st.rerun()
+        with col2:   
+            if st.button("前往最終步驟 →", use_container_width=True, key="goto_step9"):
+                st.session_state.current_step = 9
+                st.info("已解鎖 Step 9，請點擊上方分頁標籤繼續。")
+    else:
+        st.info("請先完成情境設定，並點擊「開始撰寫文案」，以開啟對話。")
+
+
+with tabs[8]: # Step 9
+    if st.session_state.current_step < 9:
+        st.info("請先完成所有分析步驟。")
     else:
         st.header("✅ 總結與下載")
         show_gdoc_link()
@@ -739,11 +901,6 @@ with tabs[7]: # Step 8
         st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。")
         st.info("若需要分析同個KOL不同品類的目標客群洞察，請回到 Step 4 選擇品類並繼續進行分析。")
-
-
-
-
-
 
 
 
