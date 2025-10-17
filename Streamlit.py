@@ -379,10 +379,7 @@ def create_blank_doc_in_folder(title, folder_id, user_email):
 def generate_claude_copy(chat_history, model_id):
     """使用 OpenRouter API 呼叫 Claude 模型來生成文案。"""
     try:
-        # 為了讓 OpenRouter 識別您的應用，需要加入 Referer 和 Title 標頭
-        # 我們可以讓 Referer 變得可設定，方便您未來部署
-        # APP_URL 可以在 secrets.toml 中設定，例如 APP_URL = "https://your-app-name.streamlit.app"
-        app_url = "https://youtube-analysis-app-gebkr9uvlwwkjvxj6yxu92.streamlit.app"
+        app_url = st.secrets["APP_URL"]
 
         response = requests.post(
             url="https://openrouter.ai/api/v1/chat/completions",
