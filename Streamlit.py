@@ -909,9 +909,9 @@ with tabs[8]: # Step 9
     if st.session_state.current_step < 9:
         st.info("請先完成所有分析步驟。")
     else:
-        st.header("✅ 總結與下載")
+        st.header("✅ 分析已完成")
         show_gdoc_link()
-        st.success("恭喜您已完成所有分析步驟！如果需要，您可以在此下載分析過程中的原始數據。")
+        st.success("恭喜您已完成所有分析步驟！")
         st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。")
         st.info("若需要分析同個KOL不同品類的目標客群洞察，請回到 Step 4 選擇品類並繼續進行分析。")
