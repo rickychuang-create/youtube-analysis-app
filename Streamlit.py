@@ -761,11 +761,22 @@ with tabs[6]: # Step 7
 with tabs[7]: # Step 8
     st.header("✍️ 行銷文案撰寫")
     st.markdown("此步驟使用AI 模型進行對話式文案生成。您可以獨立使用，或讓系統自動帶入前面步驟的分析結果作為初始情境。")
-    st.markdown("---")
+    show_gdoc_link()
     
     # 初始化對話歷史
     if "claude_chat_history" not in st.session_state:
         st.session_state.claude_chat_history = []
+
+    if 'funnel_analysis_result' in st.session_state:
+            with st.expander("📂 點此展開/收合先前步驟的分析結果", expanded=False):
+                st.markdown("##### 產品描述")
+                st.info(st.session_state.get("final_product_description", "N/A"))
+                st.markdown("##### 目標客群洞察")
+                st.info(st.session_state.get("final_edited_insights", st.session_state.get("insight_analysis_result", "N/A")))
+                st.markdown("##### 品牌價值主張")
+                st.info(st.session_state.get("bvp_result", "N/A"))
+                st.markdown("##### 行銷 Funnel 分析")
+                st.info(st.session_state.get("funnel_analysis_result", "N/A"))
 
     st.subheader("填寫文案情境資訊")
 
