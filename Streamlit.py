@@ -416,7 +416,7 @@ if 'current_step' not in st.session_state:
 tab_list = [
     "Step 1: 鎖定頻道", "Step 2: 頻道受眾分析", "Step 3: 粉絲痛點洞察",
     "Step 4: 目標客群洞察", "Step 5: 產品內容變現建議", "Step 6: 品牌價值主張", 
-    "Step 7: 行銷 Funnel 分析", "Step 8: 行銷文案撰寫", "Step 9: 總結與下載"
+    "Step 7: 行銷 Funnel 分析", "Step 8: 行銷文案撰寫", "Step 9: 完成分析"
 ]
 
 
@@ -912,10 +912,6 @@ with tabs[8]: # Step 9
         st.header("✅ 總結與下載")
         show_gdoc_link()
         st.success("恭喜您已完成所有分析步驟！如果需要，您可以在此下載分析過程中的原始數據。")
-        if 'videos_df' in st.session_state:
-            st.download_button(label="⬇️ 下載影片清單 (CSV)", data=st.session_state.videos_df.to_csv(index=False).encode("utf-8-sig"), file_name=f"{st.session_state.get('channel_title', 'export')}_videos.csv")
-        if 'comments_df' in st.session_state:
-            st.download_button(label="⬇️ 下載留言清單 (CSV)", data=st.session_state.comments_df.to_csv(index=False).encode("utf-8-sig"), file_name=f"{st.session_state.get('channel_title', 'export')}_comments.csv")
         st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。")
         st.info("若需要分析同個KOL不同品類的目標客群洞察，請回到 Step 4 選擇品類並繼續進行分析。")
