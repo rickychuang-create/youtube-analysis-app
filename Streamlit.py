@@ -912,9 +912,9 @@ with tabs[8]: # Step 9
         st.header("✅ 分析已完成")
         show_gdoc_link()
         st.success("恭喜您已完成所有分析步驟！")
-        st.markdown("---")
         st.info("若要重新分析一個新的頻道，請回到 Step 1 輸入新的 Channel ID。")
         st.info("若需要分析同個KOL不同品類的目標客群洞察，請回到 Step 4 選擇品類並繼續進行分析。")
+
 
 
 
