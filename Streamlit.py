@@ -376,7 +376,7 @@ def create_blank_doc_in_folder(title, folder_id, user_email):
         return None, f"建立 Google Docs 失敗: {e}"
 
 
-def generate_claude_copy(chat_history):
+def generate_claude_copy(chat_history, model_id):
     """使用 OpenRouter API 呼叫 Claude 模型來生成文案。"""
     try:
         # 為了讓 OpenRouter 識別您的應用，需要加入 Referer 和 Title 標頭
@@ -393,7 +393,7 @@ def generate_claude_copy(chat_history):
                 "X-Title": "YouTube AI Tools",
             },
             json={
-                "model": "anthropic/claude-3-5-sonnet-20241022",
+                "model": model_id,
                 "messages": chat_history,
             }
         )
@@ -759,8 +759,8 @@ with tabs[6]: # Step 7
                 st.info("已解鎖 Step 8，請點擊上方分頁標籤繼續。")
 
 with tabs[7]: # Step 8
-    st.header("✍️ 行銷文案撰寫 (Claude)")
-    st.markdown("此步驟使用 **Claude 模型**進行對話式文案生成。您可以獨立使用，或讓系統自動帶入前面步驟的分析結果作為初始情境。")
+    st.header("✍️ 行銷文案撰寫")
+    st.markdown("此步驟使用AI 模型進行對話式文案生成。您可以獨立使用，或讓系統自動帶入前面步驟的分析結果作為初始情境。")
     st.markdown("---")
     
     # 初始化對話歷史
@@ -776,11 +776,11 @@ with tabs[7]: # Step 8
     
     col1, col2 = st.columns(2)
     with col1:
-        product_desc_input = st.text_area("產品描述", value=default_product, height=150, help="您的產品、服務或課程是什麼？")
-        audience_input = st.text_area("目標客群洞察", value=default_insights, height=150, help="這群人是誰？他們在想什麼？有什麼痛點？")
+        product_desc_input = st.text_area("產品描述", value=default_product, height=160, help="您的產品、服務或課程是什麼？")
+        audience_input = st.text_area("目標客群洞察", value=default_insights, height=160, help="這群人是誰？他們在想什麼？有什麼痛點？")
         
         # <<< 新增：品牌價值主張輸入框 >>>
-        bvp_input = st.text_area("品牌價值主張 (KOL人設)", value=default_bvp, height=100, help="KOL 要帶給目標客群什麼樣的核心價值？一句話講完。")
+        bvp_input = st.text_area("品牌價值主張 (KOL人設)", value=default_bvp, height=130, help="KOL 要帶給目標客群什麼樣的核心價值？一句話講完。")
 
     with col2:
         funnel_stages = ["階段0：陌生、未知", "階段1：知悉、接觸", "階段2：感興趣、比較", "階段3：體驗、試用", "階段4：首購、使用", "階段5：再購、續用", "階段6：分享、推薦"]
@@ -797,6 +797,16 @@ with tabs[7]: # Step 8
             final_style_input = st.text_input("請輸入您想要的自訂風格：", placeholder="例如：帶有懸疑感的說故事風格")
         else:
             final_style_input = style_input
+
+        model_options = {
+            "Claude 4.5 Sonnet (生成時間較久，適合較複雜的品牌故事線，文案上下文順暢且具有創意)": "anthropic/claude-sonnet-4.5",
+            "Gemini 2.5 Flash (生成時間快，適合較中規中矩的情境，文案邏輯清楚且語氣自然流暢)": "google/gemini-2.5-flash",
+            "Grok 4 Fast (生成時間快，適合社群貼文，文案用語貼近網路世界)": "x-ai/grok-4-fast",
+            "Qwen3 (生成時間快，適合簡體中文，文案語氣更貼近中國語法)":"qwen/qwen3-30b-a3b"
+        }
+        selected_model_name = st.selectbox("選擇使用的模型：", options=model_options.keys())
+        selected_model_id = model_options[selected_model_name]
+
     st.markdown("---")
     
     if st.button("✅ 產生並預覽 Prompt"):
@@ -838,12 +848,12 @@ with tabs[7]: # Step 8
 
     if 'final_prompt_s8' in st.session_state:
         st.subheader("最終確認 Prompt (可選填寫)")
-        edited_prompt = st.text_area("這是即將發送給 Claude 的完整指令，您可以在送出前做最後修改：", value=st.session_state.final_prompt_s8, height=350)
+        edited_prompt = st.text_area("這是即將發送給 AI 的完整指令，您可以在送出前做最後修改：", value=st.session_state.final_prompt_s8, height=350)
 
         if st.button("🚀 根據此 Prompt 開始撰寫文案"):
             st.session_state.claude_chat_history = [{"role": "user", "content": edited_prompt}]
-            with st.spinner("Claude 正在撰寫文案..."):
-                assistant_response = generate_claude_copy(st.session_state.claude_chat_history)
+            with st.spinner("AI 正在撰寫文案..."):
+                assistant_response = generate_claude_copy(st.session_state.claude_chat_history,selected_model_id)
                 st.session_state.claude_chat_history.append({"role": "assistant", "content": assistant_response})
             # 清除 prompt 預覽，進入對話模式
             del st.session_state.final_prompt_s8
@@ -851,7 +861,7 @@ with tabs[7]: # Step 8
 
     st.markdown("---")
 
-    st.subheader("🤖 與 Claude 進行對話")
+    st.subheader("🤖 與 AI 進行對話")
     # 如果對話歷史不為空，才顯示對話介面和結束按鈕
     if st.session_state.claude_chat_history:
     # 1. 永遠先顯示所有歷史訊息
@@ -865,8 +875,8 @@ with tabs[7]: # Step 8
             st.session_state.claude_chat_history.append({"role": "user", "content": prompt})
             
             # 4. 呼叫 AI 並將 AI 回覆也加入歷史紀錄
-            with st.spinner("Claude 正在回覆..."):
-                assistant_response = generate_claude_copy(st.session_state.claude_chat_history)
+            with st.spinner("AI 正在回覆..."):
+                assistant_response = generate_claude_copy(st.session_state.claude_chat_history,selected_model_id)
                 st.session_state.claude_chat_history.append({"role": "assistant", "content": assistant_response})
             
             # 5. 重新整理頁面，讓新的對話內容被正確渲染出來
